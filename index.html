@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Co-op Tower Defense</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Rajdhani', sans-serif;
+      background: linear-gradient(135deg, #0a0e27 0%, #1a1a2e 50%, #16213e 100%);
+      color: #fff;
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #lobby {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(15, 20, 40, 0.95);
+      padding: 40px;
+      border-radius: 20px;
+      border: 2px solid #00f7ff;
+      box-shadow: 0 0 40px rgba(0, 247, 255, 0.3);
+      text-align: center;
+      z-index: 1000;
+    }
+
+    #lobby h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 48px;
+      margin-bottom: 10px;
+      background: linear-gradient(90deg, #00f7ff, #ff00ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-transform: uppercase;
+      letter-spacing: 4px;
+    }
+
+    #lobby p {
+      color: #8b9dc3;
+      margin-bottom: 30px;
+      font-size: 18px;
+    }
+
+    input {
+      width: 100%;
+      padding: 15px;
+      margin-bottom: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid #00f7ff;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 16px;
+      font-family: 'Rajdhani', sans-serif;
+    }
+
+    input:focus {
+      outline: none;
+      box-shadow: 0 0 20px rgba(0, 247, 255, 0.5);
+    }
+
+    button {
+      padding: 15px 40px;
+      background: linear-gradient(135deg, #00f7ff, #0099ff);
+      border: none;
+      border-radius: 10px;
+      color: #0a0e27;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(0, 247, 255, 0.4);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    #gameContainer {
+      display: none;
+      flex: 1;
+      padding: 20px;
+      gap: 20px;
+    }
+
+    #gameContainer.active {
+      display: flex;
+    }
+
+    #canvasWrapper {
+      flex: 1;
+      position: relative;
+      background: rgba(10, 14, 39, 0.5);
+      border-radius: 15px;
+      border: 2px solid #00f7ff;
+      overflow: hidden;
+      box-shadow: 0 0 30px rgba(0, 247, 255, 0.2);
+    }
+
+    #gameCanvas {
+      display: block;
+      cursor: crosshair;
+    }
+
+    #sidebar {
+      width: 300px;
+      background: rgba(15, 20, 40, 0.95);
+      border-radius: 15px;
+      border: 2px solid #00f7ff;
+      padding: 20px;
+      overflow-y: auto;
+      box-shadow: 0 0 30px rgba(0, 247, 255, 0.2);
+    }
+
+    .stat-panel {
+      background: rgba(0, 247, 255, 0.1);
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(0, 247, 255, 0.3);
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+
+    .stat-label {
+      color: #8b9dc3;
+      font-weight: 600;
+    }
+
+    .stat-value {
+      color: #00f7ff;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+    }
+
+    .health-bar {
+      width: 100%;
+      height: 20px;
+      background: rgba(255, 0, 0, 0.2);
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 0, 0, 0.5);
+    }
+
+    .health-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ff0000, #ff6600);
+      transition: width 0.3s;
+    }
+
+    h2 {
+      font-family: 'Orbitron', sans-serif;
+      color: #00f7ff;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-size: 20px;
+    }
+
+    .tower-btn {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 10px;
+      background: rgba(0, 247, 255, 0.1);
+      border: 1px solid #00f7ff;
+      border-radius: 8px;
+      color: #fff;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .tower-btn:hover {
+      background: rgba(0, 247, 255, 0.2);
+      transform: translateX(5px);
+    }
+
+    .tower-btn.selected {
+      background: linear-gradient(135deg, #00f7ff, #0099ff);
+      color: #0a0e27;
+    }
+
+    #playerList {
+      margin-bottom: 20px;
+    }
+
+    .player-item {
+      background: rgba(0, 247, 255, 0.1);
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 8px;
+      border-left: 3px solid #00f7ff;
+    }
+
+    .player-ready {
+      border-left-color: #00ff00;
+    }
+
+    #waveBtn {
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    .tooltip {
+      position: absolute;
+      background: rgba(0, 0, 0, 0.9);
+      color: #00f7ff;
+      padding: 8px 12px;
+      border-radius: 5px;
+      font-size: 14px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+      border: 1px solid #00f7ff;
+    }
+  </style>
+</head>
+<body>
+  <div id="lobby">
+    <h1>Tower Defense</h1>
+    <p>Defend together, survive together</p>
+    <input type="text" id="playerName" placeholder="Enter your name" maxlength="20">
+    <button id="joinBtn">Join Game</button>
+    <div id="waitingRoom" style="display: none; margin-top: 20px;">
+      <div id="lobbyPlayers"></div>
+      <button id="readyBtn" style="margin-top: 15px;">Ready Up!</button>
+    </div>
+  </div>
+
+  <div id="gameContainer">
+    <div id="canvasWrapper">
+      <canvas id="gameCanvas"></canvas>
+      <div class="tooltip" id="tooltip"></div>
+    </div>
+    
+    <div id="sidebar">
+      <div class="stat-panel">
+        <div class="stat-row">
+          <span class="stat-label">Wave</span>
+          <span class="stat-value" id="waveNum">0</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Gold</span>
+          <span class="stat-value" id="goldAmount">500</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Health</span>
+        </div>
+        <div class="health-bar">
+          <div class="health-fill" id="healthBar" style="width: 100%"></div>
+        </div>
+      </div>
+
+      <div id="playerList">
+        <h2>Players</h2>
+        <div id="activePlayers"></div>
+      </div>
+
+      <div>
+        <h2>Build Tower</h2>
+        <button class="tower-btn" data-type="basic">Basic Tower - 100g</button>
+        <button class="tower-btn" data-type="fast">Fast Tower - 150g</button>
+        <button class="tower-btn" data-type="strong">Strong Tower - 200g</button>
+      </div>
+
+      <button id="waveBtn">Start Wave</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
