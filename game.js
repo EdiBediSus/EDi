@@ -6,6 +6,7 @@ class TowerDefenseGame {
     this.gameState = null;
     this.selectedTower = null;
     this.playerId = null;
+    this.playerNameToJoin = null;
     
     this.setupCanvas();
     this.setupEventListeners();
@@ -49,6 +50,15 @@ class TowerDefenseGame {
 
     this.ws.onopen = () => {
       console.log('Connected to server');
+      
+      // Send join message now that connection is open
+      if (this.playerNameToJoin) {
+        this.ws.send(JSON.stringify({
+          type: 'join',
+          playerName: this.playerNameToJoin,
+          gameId: 'default'
+        }));
+      }
     };
 
     this.ws.onmessage = (event) => {
@@ -58,10 +68,24 @@ class TowerDefenseGame {
 
     this.ws.onerror = (error) => {
       console.error('WebSocket error:', error);
+      const joinBtn = document.getElementById('joinBtn');
+      if (joinBtn) {
+        joinBtn.textContent = 'Join Game';
+        joinBtn.disabled = false;
+      }
+      alert('Connection failed! Please check if the server is running.');
     };
 
     this.ws.onclose = () => {
       console.log('Disconnected from server');
+      const joinBtn = document.getElementById('joinBtn');
+      if (joinBtn) {
+        joinBtn.textContent = 'Join Game';
+        joinBtn.disabled = false;
+      }
+      if (this.playerId) {
+        alert('Lost connection to server!');
+      }
     };
   }
 
@@ -72,15 +96,12 @@ class TowerDefenseGame {
       return;
     }
 
+    const joinBtn = document.getElementById('joinBtn');
+    joinBtn.textContent = 'Connecting...';
+    joinBtn.disabled = true;
+
+    this.playerNameToJoin = playerName;
     this.connect();
-    
-    setTimeout(() => {
-      this.ws.send(JSON.stringify({
-        type: 'join',
-        playerName: playerName,
-        gameId: 'default'
-      }));
-    }, 100);
   }
 
   setReady() {
