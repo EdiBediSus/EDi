@@ -6,7 +6,7 @@ const path = require('path');
 // ============================================
 // PASTE YOUR RENDER API KEY HERE
 // ============================================
-const RENDER_API_KEY = 'PASTE_YOUR_RENDER_API_KEY_HERE';
+const RENDER_API_KEY = 'wss://edi-t8b7.onrender.com';
 
 const app = express();
 const server = http.createServer(app);
